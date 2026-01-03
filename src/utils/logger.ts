@@ -1,12 +1,18 @@
 import pino, { HttpLogger } from 'pino-http';
-import * as pretty from 'pino-pretty';
+import pretty from 'pino-pretty';
+import { config } from './config';
 
-export function createLogger(isProductionEnv: boolean): HttpLogger {
+function createLogger(): HttpLogger {
   const stream = pretty({ colorize: true });
 
-  if (isProductionEnv) {
+  if (config.api.isProductionEnv) {
     return pino();
   }
 
   return pino(stream);
 }
+
+const loggerMiddleware = createLogger();
+const logger = loggerMiddleware.logger;
+
+export { logger, loggerMiddleware };

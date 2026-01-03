@@ -1,18 +1,19 @@
-import * as express from 'express';
-import * as compression from 'compression';
+import 'reflect-metadata';
+import express from 'express';
+import compression from 'compression';
+import requestID from 'express-request-id';
+import bodyParser from 'body-parser';
 
-import { createLogger } from './utils/logger';
-import { config } from './utils/config';
+import { config, logger, loggerMiddleware } from './utils';
+import { customersRouter, productsRouter } from './api';
 
 const app = express();
-const logger = createLogger(config.api.isProductionEnv);
 
-app.use(logger, compression());
-
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
-});
+app
+  .use(loggerMiddleware, compression(), requestID(), bodyParser.json())
+  .use('/v1/customers', customersRouter)
+  .use('/v1/products', productsRouter);
 
 app.listen(config.api.port, () => {
-  logger.logger.info(`Server is running at http://localhost:${config.api.port}`);
+  logger.info(`Server is running at http://localhost:${config.api.port}`);
 });
