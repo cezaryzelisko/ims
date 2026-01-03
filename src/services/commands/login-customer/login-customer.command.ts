@@ -1,6 +1,6 @@
 import { ICommand } from '../interfaces';
 
-export class RegisterCustomerCommand implements ICommand {
+export class LoginCustomerCommand implements ICommand {
   constructor(
     readonly contextId: string,
     readonly username: string,
@@ -8,6 +8,6 @@ export class RegisterCustomerCommand implements ICommand {
   ) {}
 
   stringify(): string {
-    return `[${RegisterCustomerCommand.name}: ${this.contextId}] registering new customer [username=${this.username}]`;
+    return `[${LoginCustomerCommand.name}: ${this.contextId}] logging in customer with [username=${this.username}]`;
   }
 }

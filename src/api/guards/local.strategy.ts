@@ -1,25 +1,18 @@
-import * as bcrypt from 'bcrypt';
 import { Strategy } from 'passport-local';
 import { container } from 'tsyringe';
 import { InjectionTokens } from '../../services';
-import { IUnitOfWork } from '../../unit-of-work';
+import { CommandBus } from '../../services/commands/command-bus';
+import { LoginCustomerCommand } from '../../services/commands/login-customer/login-customer.command';
 
 export function prepareUsernameAndPasswordGuard(): Strategy {
-  return new Strategy(async (username, password, done) => {
-    const unitOfWork = container.resolve<IUnitOfWork>(InjectionTokens.UnitOfWork);
-
-    const customer = await unitOfWork.customerRepository.findByUsername(username);
+  return new Strategy({ passReqToCallback: true }, async (req, username, password, done) => {
+    const commandBus = container.resolve<CommandBus>(InjectionTokens.CommandBus);
+    const customer = await commandBus.execute(new LoginCustomerCommand(req.id.toString(), username, password));
 
     if (!customer) {
-      return done(null, false);
-    } else if (customer.passwordHash) {
-      const isPasswordValid = await bcrypt.compare(password, customer.passwordHash);
-
-      if (!isPasswordValid) {
-        return done(null, false);
-      }
+      return done(null, false, { message: 'Invalid username or password' });
     }
 
-    return done(null, customer.toContextModel());
+    return done(null, customer);
   });
 }
