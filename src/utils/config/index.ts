@@ -11,6 +11,7 @@ class Config {
     this.api = {
       port: Number(process.env.API_PORT) || 3000,
       isProductionEnv: process.env.NODE_ENV === 'production',
+      secret: process.env.API_SECRET || 'secret',
     };
   }
 }

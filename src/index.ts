@@ -5,7 +5,7 @@ import requestID from 'express-request-id';
 import bodyParser from 'body-parser';
 
 import { config, logger, loggerMiddleware } from './utils';
-import { customersRouter, productsRouter } from './api';
+import { configureGuards, customersRouter, productsRouter } from './api';
 
 const app = express();
 
@@ -13,6 +13,7 @@ app
   .use(loggerMiddleware, compression(), requestID(), bodyParser.json())
   .use('/v1/customers', customersRouter)
   .use('/v1/products', productsRouter);
+configureGuards(app);
 
 app.listen(config.api.port, () => {
   logger.info(`Server is running at http://localhost:${config.api.port}`);

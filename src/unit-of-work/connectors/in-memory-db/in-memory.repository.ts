@@ -1,11 +1,11 @@
 export abstract class InMemoryRepository<T> {
   protected items: Record<string, T> = {};
 
-  findById(id: string): T | null {
+  async findById(id: string): Promise<T | null> {
     return this.items[id] || null;
   }
 
-  save(id: string, item: T): T {
+  async save(id: string, item: T): Promise<T> {
     this.items[id] = item;
     return item;
   }

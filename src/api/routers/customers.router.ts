@@ -1,23 +1,15 @@
 import { Router } from 'express';
 import HttpStatus from 'http-status-codes';
 import { container } from 'tsyringe';
-import { CommandBus, InjectionTokens, LoginCustomerCommand, RegisterCustomerCommand } from '../../services';
+import { CommandBus, InjectionTokens, RegisterCustomerCommand } from '../../services';
 import { CustomerModel } from '../../domain';
+import { localAuth, signCustomer } from '../utils';
+import { CustomerDto } from '../dtos';
 
 export const customersRouter = Router();
 
-customersRouter.post('/login', async (req, res) => {
-  // TODO: use local strategy instead of direct command bus call and return JWT token
-  const commandBus = container.resolve<CommandBus>(InjectionTokens.CommandBus);
-  const customer = await commandBus.execute<LoginCustomerCommand, CustomerModel | null>(
-    new LoginCustomerCommand(req.id.toString(), req.body.username, req.body.password),
-  );
-
-  if (!customer) {
-    return res.status(HttpStatus.UNAUTHORIZED).json({ message: 'Invalid username or password' });
-  }
-
-  res.status(HttpStatus.CREATED).json({ message: `Customer logged in with [id=${customer.id}]` });
+customersRouter.post('/login', localAuth, async (req, res) => {
+  res.status(HttpStatus.CREATED).json(signCustomer(req.user as CustomerModel));
 });
 
 customersRouter.post('/registration', async (req, res) => {
@@ -30,5 +22,5 @@ customersRouter.post('/registration', async (req, res) => {
     return res.status(HttpStatus.CONFLICT).json({ message: 'Customer with the given username already exists' });
   }
 
-  res.status(HttpStatus.CREATED).json({ message: `New customer registered with [id=${customer?.id}]` });
+  res.status(HttpStatus.CREATED).json(CustomerDto.fromDomain(customer));
 });
