@@ -19,8 +19,8 @@ customersRouter.post('/registration', async (req, res) => {
   );
 
   if (!customer) {
-    return res.status(HttpStatus.CONFLICT).json({ message: 'Customer with the given username already exists' });
+    res.status(HttpStatus.CONFLICT).json({ message: 'Customer with the given username already exists' });
+  } else {
+    res.status(HttpStatus.CREATED).json(CustomerDto.fromDomain(customer));
   }
-
-  res.status(HttpStatus.CREATED).json(CustomerDto.fromDomain(customer));
 });

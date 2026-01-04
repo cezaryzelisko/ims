@@ -1,5 +1,5 @@
 export enum RegionEnum {
-  AMERICA = 'AMERICA',
-  EUROPE = 'EUROPE',
-  ASIA = 'ASIA',
+  America = 'America',
+  Europe = 'Europe',
+  Asia = 'Asia',
 }
