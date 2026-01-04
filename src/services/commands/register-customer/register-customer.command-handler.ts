@@ -13,15 +13,16 @@ import { ValidationError } from 'joi';
 export class RegisterCustomerCommandHandler implements ICommandHandler<RegisterCustomerCommand, CustomerModel> {
   constructor(@inject(InjectionTokens.UnitOfWork) private readonly unitOfWork?: IUnitOfWork) {}
 
-  async handle(command: RegisterCustomerCommand): Promise<CustomerModel | null> {
+  async handle(command: RegisterCustomerCommand): Promise<CustomerModel> {
     logger.info(command.stringify());
 
     await this.validateInput(command);
     const isUsernameInUse = await this.unitOfWork!.customerRepository.existsByUsername(command.username);
 
     if (isUsernameInUse) {
-      logger.warn(`[username=${command.username}] is already in use.`);
-      return null;
+      const message = `[username=${command.username}] is already in use.`;
+      logger.warn(message);
+      throw new DomainError(message, DomainErrorsEnum.NotAllowedError);
     }
 
     const passwordHash = await bcrypt.hash(command.password, 10);

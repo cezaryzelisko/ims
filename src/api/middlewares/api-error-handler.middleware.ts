@@ -5,10 +5,15 @@ import { NextFunction, Request, Response } from 'express';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function apiErrorHandlerMiddleware(err: Error, _req: Request, res: Response, _next: NextFunction): Response {
   if (err instanceof DomainError) {
-    if (err.key === DomainErrorsEnum.ValidationError) {
-      return res
-        .status(HttpStatus.BAD_REQUEST)
-        .json({ key: DomainErrorsEnum.ValidationError, message: err.message, details: err.details });
+    switch (err.key) {
+      case DomainErrorsEnum.ValidationError: {
+        return res
+          .status(HttpStatus.BAD_REQUEST)
+          .json({ key: DomainErrorsEnum.ValidationError, message: err.message, details: err.details });
+      }
+      case DomainErrorsEnum.NotAllowedError: {
+        return res.status(HttpStatus.CONFLICT).json({ key: err.key, message: err.message });
+      }
     }
   }
 

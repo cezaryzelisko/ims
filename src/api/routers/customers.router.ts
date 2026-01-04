@@ -17,10 +17,5 @@ customersRouter.post('/registration', async (req, res) => {
   const customer = await commandBus.execute<RegisterCustomerCommand, CustomerModel>(
     new RegisterCustomerCommand(req.id.toString(), req.body.username, req.body.password),
   );
-
-  if (!customer) {
-    res.status(HttpStatus.CONFLICT).json({ message: 'Customer with the given username already exists' });
-  } else {
-    res.status(HttpStatus.CREATED).json(CustomerDto.fromDomain(customer));
-  }
+  res.status(HttpStatus.CREATED).json(CustomerDto.fromDomain(customer));
 });
