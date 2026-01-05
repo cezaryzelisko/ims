@@ -1,13 +1,12 @@
 import { Strategy } from 'passport-local';
 import { container } from 'tsyringe';
-import { InjectionTokens } from '../../services';
-import { CommandBus } from '../../services/commands/command-bus';
+import { GenericBus, InjectionTokens } from '../../services';
 import { LoginCustomerCommand } from '../../services/commands/login-customer/login-customer.command';
 import { CustomerModel } from '../../domain';
 
 export function prepareUsernameAndPasswordGuard(): Strategy {
   return new Strategy({ passReqToCallback: true, session: false }, async (req, username, password, done) => {
-    const commandBus = container.resolve<CommandBus>(InjectionTokens.CommandBus);
+    const commandBus = container.resolve<GenericBus>(InjectionTokens.CommandBus);
     const customer = await commandBus.execute<LoginCustomerCommand, CustomerModel | null>(
       new LoginCustomerCommand(req.id.toString(), username, password),
     );

@@ -1,16 +1,16 @@
 import bcrypt from 'bcrypt';
 import { autoInjectable, inject } from 'tsyringe';
-import { ICommandHandler } from '../interfaces';
 import { RegisterCustomerCommand } from './register-customer.command';
 import { CustomerModel, DomainError, DomainErrorsEnum } from '../../../domain';
 import { logger } from '../../../utils';
-import { InjectionTokens } from '../../injection-tokens';
+import { InjectionTokens } from '../../common/injection-tokens';
 import { IUnitOfWork } from '../../../unit-of-work';
 import { customerRegistrationSchema } from '../../../schemas';
 import { ValidationError } from 'joi';
+import { IOperationHandler } from '../../common';
 
 @autoInjectable()
-export class RegisterCustomerCommandHandler implements ICommandHandler<RegisterCustomerCommand, CustomerModel> {
+export class RegisterCustomerCommandHandler implements IOperationHandler<RegisterCustomerCommand, CustomerModel> {
   constructor(@inject(InjectionTokens.UnitOfWork) private readonly unitOfWork?: IUnitOfWork) {}
 
   async handle(command: RegisterCustomerCommand): Promise<CustomerModel> {

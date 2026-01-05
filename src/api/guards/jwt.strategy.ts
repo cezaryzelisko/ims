@@ -13,7 +13,7 @@ export function prepareJwtGuard(): Strategy {
     },
     async (payload: CustomerPayloadDto, done) => {
       const unitOfWork = container.resolve<IUnitOfWork>(InjectionTokens.UnitOfWork);
-      const customer = await unitOfWork.customerRepository.findById(payload.id);
+      const customer = await unitOfWork.customerRepository.getById(payload.id);
 
       if (!customer) {
         return done(null, false);

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import HttpStatus from 'http-status-codes';
 import { container } from 'tsyringe';
-import { CommandBus, InjectionTokens, RegisterCustomerCommand } from '../../services';
+import { GenericBus, InjectionTokens, RegisterCustomerCommand } from '../../services';
 import { CustomerModel } from '../../domain';
 import { localAuth, signCustomer } from '../utils';
 import { CustomerDto } from '../dtos';
@@ -13,7 +13,7 @@ customersRouter.post('/login', localAuth, async (req, res) => {
 });
 
 customersRouter.post('/registration', async (req, res) => {
-  const commandBus = container.resolve<CommandBus>(InjectionTokens.CommandBus);
+  const commandBus = container.resolve<GenericBus>(InjectionTokens.CommandBus);
   const customer = await commandBus.execute<RegisterCustomerCommand, CustomerModel>(
     new RegisterCustomerCommand(req.id.toString(), req.body.username, req.body.password, req.body.region),
   );

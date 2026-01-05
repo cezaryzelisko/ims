@@ -1,0 +1,41 @@
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { ProductModel } from '../../../../domain';
+
+@Entity('product')
+export class ProductEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id!: string;
+
+  @Column({ length: 50 })
+  name!: string;
+
+  @Column({ length: 50 })
+  description!: string;
+
+  @Column({ type: 'numeric' })
+  price!: number;
+
+  @Column({ type: 'int' })
+  stock!: number;
+
+  static fromDomain(model: ProductModel): ProductEntity {
+    const entity = new ProductEntity();
+    entity.id = model.id!;
+    entity.name = model.name;
+    entity.description = model.description;
+    entity.price = model.price;
+    entity.stock = model.stock;
+
+    return entity;
+  }
+
+  static toDomain(entity: ProductEntity): ProductModel {
+    return new ProductModel({
+      id: entity.id,
+      name: entity.name,
+      description: entity.description,
+      price: entity.price,
+      stock: entity.stock,
+    });
+  }
+}

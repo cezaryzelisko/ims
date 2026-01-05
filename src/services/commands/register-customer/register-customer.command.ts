@@ -1,7 +1,7 @@
 import { RegionEnum } from '../../../domain';
-import { ICommand } from '../interfaces';
+import { IOperation } from '../../common';
 
-export class RegisterCustomerCommand implements ICommand {
+export class RegisterCustomerCommand implements IOperation {
   constructor(
     readonly contextId: string,
     readonly username: string,

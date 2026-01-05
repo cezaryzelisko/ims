@@ -1,4 +1,4 @@
-export interface ICommand {
+export interface IOperation {
   readonly contextId: string;
 
   stringify(): string;

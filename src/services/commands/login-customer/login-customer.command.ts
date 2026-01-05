@@ -1,6 +1,6 @@
-import { ICommand } from '../interfaces';
+import { IOperation } from '../../common';
 
-export class LoginCustomerCommand implements ICommand {
+export class LoginCustomerCommand implements IOperation {
   constructor(
     readonly contextId: string,
     readonly username: string,
