@@ -12,7 +12,7 @@ export class CustomerRepository extends InMemoryRepository<CustomerModel> implem
     return !!(await this.findByUsername(username));
   }
 
-  async create(customer: CustomerModel): Promise<CustomerModel> {
+  async persist(customer: CustomerModel): Promise<CustomerModel> {
     customer.id = uuid.v4();
     this.items[customer.id] = customer;
 

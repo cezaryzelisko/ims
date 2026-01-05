@@ -5,7 +5,7 @@ export * from './injection-tokens';
 
 import { container } from 'tsyringe';
 import { InjectionTokens } from '../services';
-import { InMemoryDB } from '../unit-of-work';
+import { PostgresDB } from '../unit-of-work';
 import {
   CommandBus,
   LoginCustomerCommand,
@@ -14,8 +14,12 @@ import {
   RegisterCustomerCommandHandler,
 } from './commands';
 
-container.register(InjectionTokens.UnitOfWork, { useValue: new InMemoryDB() }).register(InjectionTokens.CommandBus, {
-  useValue: new CommandBus()
-    .register(LoginCustomerCommand.name, new LoginCustomerCommandHandler())
-    .register(RegisterCustomerCommand.name, new RegisterCustomerCommandHandler()),
-});
+export async function initializeContainer(): Promise<void> {
+  const db = new PostgresDB();
+  await db.initialize();
+  container.register(InjectionTokens.UnitOfWork, { useValue: db }).register(InjectionTokens.CommandBus, {
+    useValue: new CommandBus()
+      .register(LoginCustomerCommand.name, new LoginCustomerCommandHandler())
+      .register(RegisterCustomerCommand.name, new RegisterCustomerCommandHandler()),
+  });
+}

@@ -1,7 +1,10 @@
+import { RegionEnum } from './region.enum';
+
 export class CustomerModel {
   id?: string | undefined;
   username!: string;
   passwordHash?: string | undefined;
+  region!: RegionEnum;
 
   constructor(data: Partial<CustomerModel>) {
     Object.assign(this, data);

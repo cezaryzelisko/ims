@@ -4,5 +4,5 @@ export interface ICustomerRepository {
   findByUsername(username: string): Promise<CustomerModel | null>;
   findById(id: string): Promise<CustomerModel | null>;
   existsByUsername(username: string): Promise<boolean>;
-  create(customer: CustomerModel): Promise<CustomerModel>;
+  persist(customer: CustomerModel): Promise<CustomerModel>;
 }

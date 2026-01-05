@@ -26,15 +26,19 @@ export class RegisterCustomerCommandHandler implements ICommandHandler<RegisterC
     }
 
     const passwordHash = await bcrypt.hash(command.password, 10);
-    let customer = new CustomerModel({ username: command.username, passwordHash });
-    customer = await this.unitOfWork!.customerRepository.create(customer);
+    let customer = new CustomerModel({ username: command.username, passwordHash, region: command.region });
+    customer = await this.unitOfWork!.customerRepository.persist(customer);
 
     return customer;
   }
 
   private async validateInput(command: RegisterCustomerCommand): Promise<void> {
     try {
-      await customerRegistrationSchema.validateAsync({ username: command.username, password: command.password });
+      await customerRegistrationSchema.validateAsync({
+        username: command.username,
+        password: command.password,
+        region: command.region,
+      });
     } catch (error) {
       if (error instanceof ValidationError) {
         throw new DomainError(error?.message, DomainErrorsEnum.ValidationError, error?.details);
