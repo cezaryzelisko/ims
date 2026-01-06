@@ -7,6 +7,8 @@ import { container } from 'tsyringe';
 import { InjectionTokens } from '../services';
 import { PostgresDB } from '../unit-of-work';
 import {
+  CreateProductCommand,
+  CreateProductCommandHandler,
   LoginCustomerCommand,
   LoginCustomerCommandHandler,
   RegisterCustomerCommand,
@@ -22,6 +24,7 @@ export async function initializeContainer(): Promise<void> {
     .register(InjectionTokens.UnitOfWork, { useValue: db })
     .register(InjectionTokens.CommandBus, {
       useValue: new GenericBus()
+        .register(CreateProductCommand.name, new CreateProductCommandHandler())
         .register(LoginCustomerCommand.name, new LoginCustomerCommandHandler())
         .register(RegisterCustomerCommand.name, new RegisterCustomerCommandHandler()),
     })

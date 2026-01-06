@@ -1,4 +1,3 @@
-import uuid from 'uuid';
 import { CustomerModel } from '../../../domain';
 import { ICustomerRepository } from '../../interfaces';
 import { InMemoryRepository } from './in-memory.repository';
@@ -10,12 +9,5 @@ export class CustomerRepository extends InMemoryRepository<CustomerModel> implem
 
   async existsByUsername(username: string): Promise<boolean> {
     return !!(await this.getByUsername(username));
-  }
-
-  async persist(customer: CustomerModel): Promise<CustomerModel> {
-    customer.id = uuid.v4();
-    this.items[customer.id] = customer;
-
-    return customer;
   }
 }

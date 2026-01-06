@@ -1,6 +1,7 @@
+import uuid from 'uuid';
 import { PageModel, PageOptionsModel } from '../../../domain';
 
-export abstract class InMemoryRepository<T> {
+export abstract class InMemoryRepository<T extends { id?: string | undefined }> {
   protected items: Record<string, T> = {};
 
   async getById(id: string): Promise<T | null> {
@@ -15,8 +16,10 @@ export abstract class InMemoryRepository<T> {
     return new PageModel(pageItems, items.length, opts);
   }
 
-  async save(id: string, item: T): Promise<T> {
-    this.items[id] = item;
-    return item;
+  async persist(customer: T): Promise<T> {
+    customer.id = uuid.v4();
+    this.items[customer.id] = customer;
+
+    return customer;
   }
 }

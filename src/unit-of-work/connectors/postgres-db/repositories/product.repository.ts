@@ -17,4 +17,9 @@ export class ProductRepository extends Repository<ProductEntity> implements IPro
       opts,
     );
   }
+
+  async persist(model: ProductModel): Promise<ProductModel> {
+    const entity = await this.save(ProductEntity.fromDomain(model));
+    return ProductEntity.toDomain(entity);
+  }
 }

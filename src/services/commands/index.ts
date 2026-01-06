@@ -1,3 +1,5 @@
+export * from './create-product/create-product.command';
+export * from './create-product/create-product.command-handler';
 export * from './login-customer/login-customer.command';
 export * from './login-customer/login-customer.command-handler';
 export * from './register-customer/register-customer.command';
