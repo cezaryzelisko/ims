@@ -29,7 +29,11 @@ export class ProductEntity {
     return entity;
   }
 
-  static toDomain(entity: ProductEntity): ProductModel {
+  static toDomain(entity?: ProductEntity | null): ProductModel | null {
+    if (!entity) {
+      return null;
+    }
+
     return new ProductModel({
       id: entity.id,
       name: entity.name,

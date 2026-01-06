@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import { container } from 'tsyringe';
-import { CreateProductCommand, GenericBus, GetAllProductsQuery, InjectionTokens } from '../../services';
+import {
+  CreateProductCommand,
+  GenericBus,
+  GetAllProductsQuery,
+  InjectionTokens,
+  RestockProductCommand,
+  SellProductCommand,
+} from '../../services';
 import { PageModel, ProductModel } from '../../domain';
 import { PageDto, PageOptionsDto, ProductDto } from '../dtos';
 import HttpStatus from 'http-status-codes';
@@ -30,4 +37,22 @@ productsRouter.post('/', async (req, res) => {
   );
 
   return res.status(HttpStatus.OK).json(ProductDto.fromDomain(product));
+});
+
+productsRouter.post('/:id/restock', async (req, res) => {
+  const commandBus = container.resolve<GenericBus>(InjectionTokens.CommandBus);
+  const product = await commandBus.execute<RestockProductCommand, ProductModel>(
+    new RestockProductCommand(req.id.toString(), req.params.id, req.body.count),
+  );
+
+  return res.status(HttpStatus.CREATED).json(ProductDto.fromDomain(product));
+});
+
+productsRouter.post('/:id/sell', async (req, res) => {
+  const commandBus = container.resolve<GenericBus>(InjectionTokens.CommandBus);
+  const product = await commandBus.execute<SellProductCommand, ProductModel>(
+    new SellProductCommand(req.id.toString(), req.params.id, req.body.count),
+  );
+
+  return res.status(HttpStatus.CREATED).json(ProductDto.fromDomain(product));
 });

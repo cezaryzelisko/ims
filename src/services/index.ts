@@ -13,6 +13,10 @@ import {
   LoginCustomerCommandHandler,
   RegisterCustomerCommand,
   RegisterCustomerCommandHandler,
+  RestockProductCommand,
+  RestockProductCommandHandler,
+  SellProductCommand,
+  SellProductCommandHandler,
 } from './commands';
 import { GenericBus } from './common';
 import { GetAllProductsQuery, GetAllProductsQueryHandler } from './queries';
@@ -26,7 +30,9 @@ export async function initializeContainer(): Promise<void> {
       useValue: new GenericBus()
         .register(CreateProductCommand.name, new CreateProductCommandHandler())
         .register(LoginCustomerCommand.name, new LoginCustomerCommandHandler())
-        .register(RegisterCustomerCommand.name, new RegisterCustomerCommandHandler()),
+        .register(RegisterCustomerCommand.name, new RegisterCustomerCommandHandler())
+        .register(RestockProductCommand.name, new RestockProductCommandHandler())
+        .register(SellProductCommand.name, new SellProductCommandHandler()),
     })
     .register(InjectionTokens.QueryBus, {
       useValue: new GenericBus().register(GetAllProductsQuery.name, new GetAllProductsQueryHandler()),
