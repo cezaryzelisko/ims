@@ -18,7 +18,7 @@ export class RestockProductCommandHandler implements IOperationHandler<RestockPr
     const product = await this.unitOfWork!.productRepository.getById(command.productId);
 
     if (!product) {
-      throw new DomainError(`Product with [id=${command.productId}] does not exist`, DomainErrorsEnum.NotFound);
+      throw new DomainError(`Product with [id=${command.productId}] does not exist`, DomainErrorsEnum.NotFoundError);
     }
 
     product.restock(command.count);

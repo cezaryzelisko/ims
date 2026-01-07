@@ -1,4 +1,4 @@
-import { ProductModel } from '../../domain';
+import { ProductCategoryEnum, ProductModel } from '../../domain';
 
 export class ProductDto {
   constructor(
@@ -7,9 +7,10 @@ export class ProductDto {
     readonly description: string,
     readonly price: number,
     readonly stock: number,
+    readonly category: ProductCategoryEnum,
   ) {}
 
   static fromDomain(model: ProductModel): ProductDto {
-    return new ProductDto(model.id!, model.name, model.description, model.price, model.stock);
+    return new ProductDto(model.id!, model.name, model.description, model.price, model.stock, model.category);
   }
 }

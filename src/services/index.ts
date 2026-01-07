@@ -11,6 +11,8 @@ import {
   CreateProductCommandHandler,
   LoginCustomerCommand,
   LoginCustomerCommandHandler,
+  OrderProductsCommand,
+  OrderProductsCommandHandler,
   RegisterCustomerCommand,
   RegisterCustomerCommandHandler,
   RestockProductCommand,
@@ -30,6 +32,7 @@ export async function initializeContainer(): Promise<void> {
       useValue: new GenericBus()
         .register(CreateProductCommand.name, new CreateProductCommandHandler())
         .register(LoginCustomerCommand.name, new LoginCustomerCommandHandler())
+        .register(OrderProductsCommand.name, new OrderProductsCommandHandler())
         .register(RegisterCustomerCommand.name, new RegisterCustomerCommandHandler())
         .register(RestockProductCommand.name, new RestockProductCommandHandler())
         .register(SellProductCommand.name, new SellProductCommandHandler()),

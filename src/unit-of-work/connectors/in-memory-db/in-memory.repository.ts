@@ -16,6 +16,10 @@ export abstract class InMemoryRepository<T extends { id?: string | undefined }> 
     return new PageModel(pageItems, items.length, opts);
   }
 
+  async getManyByIds(ids: string[]): Promise<T[]> {
+    return Object.values(this.items).filter((item) => ids.includes(item.id!));
+  }
+
   async persist(customer: T): Promise<T> {
     customer.id = uuid.v4();
     this.items[customer.id] = customer;

@@ -11,6 +11,6 @@ export class CustomerModel {
   }
 
   toContextModel(): CustomerModel {
-    return new CustomerModel({ id: this.id, username: this.username });
+    return new CustomerModel({ id: this.id, username: this.username, region: this.region });
   }
 }

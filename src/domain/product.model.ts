@@ -1,5 +1,6 @@
 import { DomainError } from './domain-error.model';
 import { DomainErrorsEnum } from './domain-errors.enum';
+import { ProductCategoryEnum } from './product-category.enum';
 
 export class ProductModel {
   id?: string;
@@ -7,6 +8,7 @@ export class ProductModel {
   description!: string;
   price!: number;
   stock!: number;
+  category!: ProductCategoryEnum;
 
   constructor(data: Partial<ProductModel>) {
     Object.assign(this, data);

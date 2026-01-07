@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { ProductModel } from '../../../../domain';
+import { ProductCategoryEnum, ProductModel } from '../../../../domain';
 
 @Entity('product')
 export class ProductEntity {
@@ -18,6 +18,9 @@ export class ProductEntity {
   @Column({ type: 'int' })
   stock!: number;
 
+  @Column({ type: 'enum', enum: ProductCategoryEnum })
+  category!: ProductCategoryEnum;
+
   static fromDomain(model: ProductModel): ProductEntity {
     const entity = new ProductEntity();
     entity.id = model.id!;
@@ -25,6 +28,7 @@ export class ProductEntity {
     entity.description = model.description;
     entity.price = model.price;
     entity.stock = model.stock;
+    entity.category = model.category;
 
     return entity;
   }
@@ -40,6 +44,7 @@ export class ProductEntity {
       description: entity.description,
       price: entity.price,
       stock: entity.stock,
+      category: entity.category,
     });
   }
 }

@@ -14,8 +14,11 @@ export function apiErrorHandlerMiddleware(err: Error, _req: Request, res: Respon
       case DomainErrorsEnum.NotAllowedError: {
         return res.status(HttpStatus.CONFLICT).json({ key: err.key, message: err.message });
       }
-      case DomainErrorsEnum.NotFound: {
+      case DomainErrorsEnum.NotFoundError: {
         return res.status(HttpStatus.NOT_FOUND).json({ key: err.key, message: err.message });
+      }
+      case DomainErrorsEnum.ProcessingError: {
+        return res.status(HttpStatus.CONFLICT).json({ key: err.key, message: err.message });
       }
     }
   }

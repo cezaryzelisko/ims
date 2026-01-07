@@ -1,5 +1,6 @@
 export enum DomainErrorsEnum {
   ValidationError = 'ValidationError',
   NotAllowedError = 'NotAllowedError',
-  NotFound = 'NotFound',
+  NotFoundError = 'NotFoundError',
+  ProcessingError = 'ProcessingError',
 }

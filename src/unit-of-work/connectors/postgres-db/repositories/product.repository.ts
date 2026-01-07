@@ -18,6 +18,11 @@ export class ProductRepository extends Repository<ProductEntity> implements IPro
     );
   }
 
+  async getManyByIds(ids: string[]): Promise<ProductModel[]> {
+    const entities = await this.createQueryBuilder('product').whereInIds(ids).getMany();
+    return entities.map((entity) => ProductEntity.toDomain(entity)!);
+  }
+
   async getById(id: string): Promise<ProductModel | null> {
     const entity = await this.createQueryBuilder('product').where('id = :id', { id }).getOne();
     return ProductEntity.toDomain(entity);
