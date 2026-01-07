@@ -1,4 +1,4 @@
-import uuid from 'uuid';
+import { v4 } from 'uuid';
 import { PageModel, PageOptionsModel } from '../../../domain';
 
 export abstract class InMemoryRepository<T extends { id?: string | undefined }> {
@@ -20,10 +20,13 @@ export abstract class InMemoryRepository<T extends { id?: string | undefined }> 
     return Object.values(this.items).filter((item) => ids.includes(item.id!));
   }
 
-  async persist(customer: T): Promise<T> {
-    customer.id = uuid.v4();
-    this.items[customer.id] = customer;
+  async persist(model: T): Promise<T> {
+    if (!model.id) {
+      model.id = v4();
+    }
 
-    return customer;
+    this.items[model.id] = model;
+
+    return model;
   }
 }

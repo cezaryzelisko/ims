@@ -7,5 +7,7 @@ module.exports = {
   testEnvironment: 'node',
   transform: {
     ...tsJestTransformCfg,
+    '^.+\\.js$': 'babel-jest',
   },
+  transformIgnorePatterns: ['/node_modules/(?!uuid)/'],
 };

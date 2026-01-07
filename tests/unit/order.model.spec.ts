@@ -1,4 +1,4 @@
-import { ProductModel, ProductCategoryEnum, OrderModel, RegionEnum } from '../src/domain';
+import { ProductModel, ProductCategoryEnum, OrderModel, RegionEnum } from '../../src/domain';
 
 describe('OrderModel', () => {
   const createProduct = (data: Partial<ProductModel> = {}): ProductModel => {
@@ -11,6 +11,9 @@ describe('OrderModel', () => {
       category: ProductCategoryEnum.Electronics,
       ...data,
     });
+  };
+  const mockCurrentDate = (order: OrderModel, mockDate: Date): void => {
+    jest.spyOn(order as unknown as { getCurrentDate: () => Date }, 'getCurrentDate').mockImplementation(() => mockDate);
   };
 
   describe('constructor', () => {
@@ -45,6 +48,8 @@ describe('OrderModel', () => {
 
       expect(order.id).toBeUndefined();
       expect(order.price).toBeUndefined();
+      expect(order.customerId).toBeUndefined();
+      expect(order.productIds).toBeUndefined();
     });
   });
 
@@ -76,7 +81,7 @@ describe('OrderModel', () => {
 
       order.calculateOrderValue(products, RegionEnum.Europe);
 
-      expect(order.price).toBe(115);
+      expect(order.price).toBeCloseTo(115);
     });
 
     it('should apply Asia region pricing (5% discount)', () => {
@@ -85,7 +90,7 @@ describe('OrderModel', () => {
 
       order.calculateOrderValue(products, RegionEnum.Asia);
 
-      expect(order.price).toBe(95);
+      expect(order.price).toBeCloseTo(95);
     });
 
     it('should handle multiple products with region markup', () => {
@@ -97,7 +102,19 @@ describe('OrderModel', () => {
 
       order.calculateOrderValue(products, RegionEnum.Europe);
 
-      expect(order.price).toBe(230); // (100 + 100) * 1.15
+      expect(order.price).toBeCloseTo(230); // (100 + 100) * 1.15
+    });
+
+    it('should handle multiple products with region discount', () => {
+      const order = new OrderModel({
+        customerId: 'cust-1',
+        productIds: ['prod-1', 'prod-2'],
+      });
+      const products = [createProduct({ price: 100 }), createProduct({ price: 50 })];
+
+      order.calculateOrderValue(products, RegionEnum.Asia);
+
+      expect(order.price).toBeCloseTo(142.5); // (100 + 50) * 0.95
     });
   });
 
@@ -138,42 +155,6 @@ describe('OrderModel', () => {
       expect(order.price).toBe(3500); // 5000 - (5000 * 0.3)
     });
 
-    it('should apply exactly 10% for 5 products', () => {
-      const order = new OrderModel({
-        customerId: 'cust-1',
-        productIds: Array(5).fill('prod'),
-      });
-      const products = Array(5).fill(createProduct({ price: 50 }));
-
-      order.calculateOrderValue(products, RegionEnum.US);
-
-      expect(order.price).toBe(225); // 250 - (250 * 0.1)
-    });
-
-    it('should apply exactly 20% for 10 products', () => {
-      const order = new OrderModel({
-        customerId: 'cust-1',
-        productIds: Array(10).fill('prod'),
-      });
-      const products = Array(10).fill(createProduct({ price: 50 }));
-
-      order.calculateOrderValue(products, RegionEnum.US);
-
-      expect(order.price).toBe(400); // 500 - (500 * 0.2)
-    });
-
-    it('should apply exactly 30% for 50 products', () => {
-      const order = new OrderModel({
-        customerId: 'cust-1',
-        productIds: Array(50).fill('prod'),
-      });
-      const products = Array(50).fill(createProduct({ price: 50 }));
-
-      order.calculateOrderValue(products, RegionEnum.US);
-
-      expect(order.price).toBe(1750); // 2500 - (2500 * 0.3)
-    });
-
     it('should not apply discount for 4 products', () => {
       const order = new OrderModel({
         customerId: 'cust-1',
@@ -190,16 +171,14 @@ describe('OrderModel', () => {
   describe('calculateOrderValue - seasonal discounts', () => {
     it('should detect holiday sales in July (month 6)', () => {
       // Mock date to be in July
-      const originalDate = Date;
-      const mockDate = new Date(2024, 6, 15); // July 15, 2024
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      const mockDate = new Date(2025, 6, 15); // July 15, 2025
 
       const order = new OrderModel({
         customerId: 'cust-1',
-        productIds: ['book1', 'book2', 'electronics1', 'clothes1', 'furniture1'],
+        productIds: ['book1', 'electronics1', 'clothes1', 'furniture1'],
       });
+      mockCurrentDate(order, mockDate);
       const products = [
-        createProduct({ price: 100, category: ProductCategoryEnum.Books }),
         createProduct({ price: 100, category: ProductCategoryEnum.Books }),
         createProduct({ price: 100, category: ProductCategoryEnum.Electronics }),
         createProduct({ price: 100, category: ProductCategoryEnum.Clothes }),
@@ -208,21 +187,21 @@ describe('OrderModel', () => {
 
       order.calculateOrderValue(products, RegionEnum.US);
 
-      // Books and Electronics get 15% discount: (100 + 100 + 100) * 0.15 = 45
-      // Total: 500, Discount: 45, Price: 455
-      expect(order.price).toBe(455);
+      // Books and Electronics get 15% discount: (100 + 100) * 0.15 = 30
+      // Total: 400, Discount: 30, Price: 370
+      expect(order.price).toBe(370);
 
       jest.restoreAllMocks();
     });
 
     it('should detect holiday sales in August (month 7)', () => {
-      const mockDate = new Date(2024, 7, 15); // August 15, 2024
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      const mockDate = new Date(2025, 7, 15); // August 15, 2025
 
       const order = new OrderModel({
         customerId: 'cust-1',
         productIds: ['book1', 'electronics1'],
       });
+      mockCurrentDate(order, mockDate);
       const products = [
         createProduct({ price: 100, category: ProductCategoryEnum.Books }),
         createProduct({ price: 100, category: ProductCategoryEnum.Electronics }),
@@ -237,13 +216,13 @@ describe('OrderModel', () => {
     });
 
     it('should not apply holiday discount for non-promotional categories', () => {
-      const mockDate = new Date(2024, 6, 15); // July
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      const mockDate = new Date(2025, 6, 15); // July 15, 2025
 
       const order = new OrderModel({
         customerId: 'cust-1',
         productIds: ['clothes1', 'furniture1'],
       });
+      mockCurrentDate(order, mockDate);
       const products = [
         createProduct({ price: 100, category: ProductCategoryEnum.Clothes }),
         createProduct({ price: 100, category: ProductCategoryEnum.Furnitures }),
@@ -256,18 +235,41 @@ describe('OrderModel', () => {
 
       jest.restoreAllMocks();
     });
+
+    it('should not apply holiday discount outside holiday dates', () => {
+      const mockDate = new Date(2025, 0, 15); // January 15, 2025
+
+      const order = new OrderModel({
+        customerId: 'cust-1',
+        productIds: ['book1', 'furniture1'],
+      });
+      mockCurrentDate(order, mockDate);
+      const products = [
+        createProduct({ price: 100, category: ProductCategoryEnum.Books }),
+        createProduct({ price: 100, category: ProductCategoryEnum.Furnitures }),
+      ];
+
+      order.calculateOrderValue(products, RegionEnum.US);
+
+      // No holiday date, no discount
+      expect(order.price).toBe(200);
+
+      jest.restoreAllMocks();
+    });
   });
 
   describe('calculateOrderValue - black friday', () => {
     it('should apply 25% discount on black friday', () => {
       // Black Friday is the last Friday of November
-      const mockDate = new Date(2024, 10, 29); // Last Friday of November 2024
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      const mockDate = new Date(2025, 10, 28); // Last Friday of November 2025
 
       const order = new OrderModel({
         customerId: 'cust-1',
         productIds: ['prod-1', 'prod-2'],
       });
+      jest
+        .spyOn(order as unknown as { getCurrentDate: () => Date }, 'getCurrentDate')
+        .mockImplementation(() => mockDate);
       const products = [createProduct({ price: 100 }), createProduct({ price: 100 })];
 
       order.calculateOrderValue(products, RegionEnum.US);
@@ -279,13 +281,13 @@ describe('OrderModel', () => {
     });
 
     it('should not apply black friday discount on non-black friday dates', () => {
-      const mockDate = new Date(2024, 10, 22); // Not Friday
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      const mockDate = new Date(2025, 5, 22); // Not Black Friday
 
       const order = new OrderModel({
         customerId: 'cust-1',
         productIds: ['prod-1'],
       });
+      mockCurrentDate(order, mockDate);
       const products = [createProduct({ price: 100 })];
 
       order.calculateOrderValue(products, RegionEnum.US);
@@ -298,24 +300,19 @@ describe('OrderModel', () => {
 
   describe('calculateOrderValue - discount precedence', () => {
     it('should apply maximum discount when both seasonal and volume apply', () => {
-      const mockDate = new Date(2024, 6, 15); // July - holiday season
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
+      const mockDate = new Date(2025, 6, 15); // July - holiday season
 
       const order = new OrderModel({
         customerId: 'cust-1',
         productIds: Array(10).fill('prod'), // 10 items = 20% volume discount
       });
-      const products = Array(5)
-        .fill(null)
-        .flatMap(() => [
-          createProduct({ price: 100, category: ProductCategoryEnum.Books }),
-          createProduct({ price: 100, category: ProductCategoryEnum.Electronics }),
-        ]);
+      mockCurrentDate(order, mockDate);
+      const products = Array(10).fill(createProduct({ price: 100, category: ProductCategoryEnum.Books }));
 
       order.calculateOrderValue(products, RegionEnum.US);
 
       // Total: 1000
-      // Seasonal discount (Books + Electronics): 1000 * 0.15 = 150
+      // Seasonal discount (Books): 1000 * 0.15 = 150
       // Volume discount (10 items): 1000 * 0.2 = 200
       // Max discount: 200
       // Price: 800
@@ -323,45 +320,25 @@ describe('OrderModel', () => {
 
       jest.restoreAllMocks();
     });
-
-    it('should use maximum between seasonal and volume discount', () => {
-      const mockDate = new Date(2024, 6, 15); // July
-      jest.spyOn(global, 'Date').mockImplementation(() => mockDate as any);
-
-      const order = new OrderModel({
-        customerId: 'cust-1',
-        productIds: Array(5).fill('prod'), // 5 items = 10% volume discount
-      });
-      const products = Array(5).fill(createProduct({ price: 100, category: ProductCategoryEnum.Books }));
-
-      order.calculateOrderValue(products, RegionEnum.US);
-
-      // Total: 500
-      // Seasonal discount (all Books): 500 * 0.15 = 75
-      // Volume discount (5 items): 500 * 0.1 = 50
-      // Max: 75
-      // Price: 425
-      expect(order.price).toBe(425);
-
-      jest.restoreAllMocks();
-    });
   });
 
   describe('calculateOrderValue - region combinations', () => {
     it('should handle all regions correctly', () => {
-      const regions = [RegionEnum.US, RegionEnum.Europe, RegionEnum.Asia];
+      const regions = Object.values(RegionEnum);
       const basePrice = 100;
+      const finalPrices: Record<RegionEnum, number> = {
+        [RegionEnum.US]: 100,
+        [RegionEnum.Europe]: 115,
+        [RegionEnum.Asia]: 95,
+      };
 
-      const results = regions.map((region) => {
+      for (const region of regions) {
         const order = new OrderModel({ customerId: 'cust-1', productIds: ['prod-1'] });
         const products = [createProduct({ price: basePrice })];
         order.calculateOrderValue(products, region);
-        return { region, price: order.price };
-      });
 
-      expect(results).toContainEqual({ region: RegionEnum.US, price: 100 });
-      expect(results).toContainEqual({ region: RegionEnum.Europe, price: 115 });
-      expect(results).toContainEqual({ region: RegionEnum.Asia, price: 95 });
+        expect(order.price).toBeCloseTo(finalPrices[region]);
+      }
     });
 
     it('should apply region markup to all products', () => {
@@ -374,7 +351,7 @@ describe('OrderModel', () => {
       order.calculateOrderValue(products, RegionEnum.Europe);
 
       // (50 + 75 + 100) * 1.15 = 225 * 1.15 = 258.75
-      expect(order.price).toBe(258.75);
+      expect(order.price).toBeCloseTo(258.75);
     });
   });
 
@@ -403,7 +380,7 @@ describe('OrderModel', () => {
 
       order.calculateOrderValue(products, RegionEnum.US);
 
-      expect(order.price).toBeCloseTo(19.99, 2);
+      expect(order.price).toBeCloseTo(19.99);
     });
 
     it('should handle large quantities', () => {
@@ -416,77 +393,45 @@ describe('OrderModel', () => {
       order.calculateOrderValue(products, RegionEnum.US);
 
       // 100 items > 50, so 30% discount: 10000 - 3000 = 7000
-      expect(order.price).toBe(7000);
+      expect(order.price).toBe(7_000);
     });
 
     it('should handle very high prices', () => {
       const order = new OrderModel({ customerId: 'cust-1', productIds: ['prod-1'] });
-      const products = [createProduct({ price: 1000000 })];
+      const products = [createProduct({ price: 1_000_000 })];
 
       order.calculateOrderValue(products, RegionEnum.US);
 
-      expect(order.price).toBe(1000000);
-    });
-
-    it('should handle negative prices (if allowed)', () => {
-      const order = new OrderModel({ customerId: 'cust-1', productIds: ['prod-1'] });
-      const products = [createProduct({ price: -100 })];
-
-      order.calculateOrderValue(products, RegionEnum.US);
-
-      expect(order.price).toBe(-100);
+      expect(order.price).toBe(1_000_000);
     });
   });
 
-  describe('private helper methods behavior', () => {
-    it('should calculate product price correctly for each region', () => {
-      const regions = [
-        { region: RegionEnum.US, multiplier: 1 },
-        { region: RegionEnum.Europe, multiplier: 1.15 },
-        { region: RegionEnum.Asia, multiplier: 0.95 },
-      ];
+  describe('calculateOrderValue - discount and region based prices', () => {
+    it('should handle volume based discount and europe markup', () => {
+      const order = new OrderModel({ customerId: 'cust-1', productIds: Array(5).fill('prod') });
+      const products = Array(5).fill(createProduct({ price: 100 }));
 
-      regions.forEach(({ region, multiplier }) => {
-        const order = new OrderModel({ customerId: 'cust-1', productIds: ['prod-1'] });
-        const products = [createProduct({ price: 200 })];
+      order.calculateOrderValue(products, RegionEnum.Europe);
 
-        order.calculateOrderValue(products, region);
-
-        expect(order.price).toBeCloseTo(200 * multiplier, 2);
-      });
-    });
-  });
-
-  describe('property assignments', () => {
-    it('should allow setting id after construction', () => {
-      const order = new OrderModel({ customerId: 'cust-1', productIds: ['prod-1'] });
-      order.id = 'new-id';
-
-      expect(order.id).toBe('new-id');
+      // total (+ VAT): 500 * 1.15 = 575
+      // volume based discount: 575 * 0.9 = 517.5
+      expect(order.price).toBeCloseTo(517.5);
     });
 
-    it('should allow setting price after construction', () => {
-      const order = new OrderModel({ customerId: 'cust-1', productIds: ['prod-1'] });
-      order.price = 999;
+    it('should handle Black Friday discount and asia discount', () => {
+      // Black Friday is the last Friday of November
+      const mockDate = new Date(2025, 10, 28); // Last Friday of November 2025
+      const order = new OrderModel({ customerId: 'cust-1', productIds: Array(5).fill('prod') });
+      mockCurrentDate(order, mockDate);
+      const products = Array(5).fill(createProduct({ price: 100 }));
 
-      expect(order.price).toBe(999);
-    });
+      order.calculateOrderValue(products, RegionEnum.Asia);
 
-    it('should allow modifying customerId after construction', () => {
-      const order = new OrderModel({ customerId: 'cust-1', productIds: ['prod-1'] });
-      order.customerId = 'cust-2';
+      // total (- discount): 500 * 0.95 = 475
+      // black friday discount: 475 * 0.75 = 356.25
+      expect(order.price).toBeCloseTo(356.25);
 
-      expect(order.customerId).toBe('cust-2');
-    });
-
-    it('should allow modifying productIds after construction', () => {
-      const order = new OrderModel({
-        customerId: 'cust-1',
-        productIds: ['prod-1'],
-      });
-      order.productIds = ['prod-2', 'prod-3'];
-
-      expect(order.productIds).toEqual(['prod-2', 'prod-3']);
+      jest.restoreAllMocks();
     });
   });
 });

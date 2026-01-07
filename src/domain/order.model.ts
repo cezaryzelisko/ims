@@ -43,7 +43,7 @@ export class OrderModel {
   }
 
   private isHolidaySales(): boolean {
-    const currentMonth = new Date().getMonth();
+    const currentMonth = this.getCurrentDate().getMonth();
     return currentMonth >= this.holidayStartMonth && currentMonth <= this.holidayEndMonth;
   }
 
@@ -61,10 +61,10 @@ export class OrderModel {
   }
 
   private isBlackFridaySale(): boolean {
-    const now = new Date();
-    let november = new Date(now.getFullYear(), this.blackFridayMonth, 0);
+    const now = this.getCurrentDate();
+    let november = new Date(now.getFullYear(), this.blackFridayMonth + 1, 0);
 
-    while (november.getDay() !== this.blackFridayDayOfWeek) {
+    while (november.getDay() !== this.blackFridayDayOfWeek && november.getMonth() === this.blackFridayMonth) {
       november = new Date(november.getFullYear(), november.getMonth(), november.getDate() - 1);
     }
 
@@ -99,5 +99,9 @@ export class OrderModel {
         return product.price * 0.95;
       }
     }
+  }
+
+  private getCurrentDate(): Date {
+    return new Date();
   }
 }

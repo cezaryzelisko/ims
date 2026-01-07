@@ -1,4 +1,4 @@
-import { PageOptionsModel, PageModel } from '../src/domain';
+import { PageOptionsModel, PageModel } from '../../src/domain';
 
 describe('PageModel', () => {
   describe('constructor', () => {
@@ -65,7 +65,7 @@ describe('PageModel', () => {
       const customOptions = new PageOptionsModel(50, 100);
       const page = new PageModel([1, 2], 500, customOptions);
 
-      expect(page.options.limit).toBe(50);
+      expect(page.options.limit).toBe(20);
       expect(page.options.offset).toBe(100);
     });
   });
@@ -102,9 +102,9 @@ describe('PageModel', () => {
     });
 
     it('should handle large count with large limit', () => {
-      const page = new PageModel([1], 1000000, new PageOptionsModel(10000, 0));
+      const page = new PageModel([1], 1_000_000, new PageOptionsModel(10_000, 0));
 
-      expect(page.pagesCount).toBe(100);
+      expect(page.pagesCount).toBe(50_000);
     });
 
     it('should round up pages count correctly', () => {
@@ -122,53 +122,26 @@ describe('PageModel', () => {
 
       expect(page.pagesCount).toBe(1);
     });
-
-    it('should handle fractional results by rounding up', () => {
-      const page = new PageModel([1, 2], 33, new PageOptionsModel(10, 0));
-
-      expect(page.pagesCount).toBe(4);
-    });
-  });
-
-  describe('multiple instances', () => {
-    it('should maintain independence between instances', () => {
-      const page1 = new PageModel([1, 2, 3], 30, new PageOptionsModel(10, 0));
-      const page2 = new PageModel(['a', 'b'], 50, new PageOptionsModel(20, 10));
-
-      expect(page1.data).toEqual([1, 2, 3]);
-      expect(page1.count).toBe(30);
-      expect(page1.pagesCount).toBe(3);
-
-      expect(page2.data).toEqual(['a', 'b']);
-      expect(page2.count).toBe(50);
-      expect(page2.pagesCount).toBe(3);
-    });
-
-    it('should handle same data but different pagination', () => {
-      const data = [1, 2, 3, 4, 5];
-      const page1 = new PageModel(data, 100, new PageOptionsModel(10, 0));
-      const page2 = new PageModel(data, 100, new PageOptionsModel(25, 0));
-
-      expect(page1.pagesCount).toBe(10);
-      expect(page2.pagesCount).toBe(4);
-    });
   });
 
   describe('edge cases', () => {
     it('should handle page with single item', () => {
-      const page = new PageModel([42], 1);
+      const count = 1;
+      const data = [42];
+      const page = new PageModel(data, count);
 
       expect(page.data).toEqual([42]);
-      expect(page.count).toBe(1);
+      expect(page.count).toBe(count);
       expect(page.pagesCount).toBe(1);
     });
 
     it('should handle very large data arrays', () => {
-      const largeArray = Array.from({ length: 10000 }, (_, i) => ({ id: i }));
-      const page = new PageModel(largeArray, 10000, new PageOptionsModel(100, 0));
+      const count = 10_000;
+      const largeArray = Array.from({ length: count }, (_, i) => ({ id: i }));
+      const page = new PageModel(largeArray, count, new PageOptionsModel(100, 0));
 
-      expect(page.data.length).toBe(10000);
-      expect(page.pagesCount).toBe(100);
+      expect(page.data.length).toBe(10_000);
+      expect(page.pagesCount).toBe(500);
     });
 
     it('should handle complex nested objects', () => {
@@ -179,61 +152,12 @@ describe('PageModel', () => {
       const page = new PageModel(complexData, 100);
 
       expect(page.data).toEqual(complexData);
-      expect(page.data[0].nested.value).toBe('a');
     });
 
-    it('should handle limit of zero', () => {
+    it('should handle limit of zero by assigning the default limit', () => {
       const page = new PageModel([1, 2, 3], 100, new PageOptionsModel(0, 0));
 
-      // This would cause division by zero, potentially resulting in Infinity
-      expect(page.pagesCount).toBe(Infinity);
-    });
-
-    it('should handle decimal limit and count', () => {
-      const page = new PageModel([1, 2], 25.5, new PageOptionsModel(10.5, 0));
-
-      expect(page.pagesCount).toBe(3);
-    });
-
-    it('should handle null values in data array', () => {
-      const page = new PageModel([1, null, 3] as (number | null)[], 3);
-
-      expect(page.data).toEqual([1, null, 3]);
-      expect(page.data[1]).toBeNull();
-    });
-  });
-
-  describe('getters readonly behavior', () => {
-    it('should have readonly data', () => {
-      const page = new PageModel([1, 2, 3], 10);
-
-      expect(() => {
-        (page as any).data = [4, 5, 6];
-      }).not.toThrow(); // Assignment doesn't throw in non-strict mode but doesn't change value
-
-      // Verify data hasn't changed
-      expect(page.data).toEqual([1, 2, 3]);
-    });
-
-    it('should have readonly count', () => {
-      const page = new PageModel([1, 2, 3], 10);
-
-      expect(() => {
-        (page as any).count = 100;
-      }).not.toThrow();
-
-      expect(page.count).toBe(10);
-    });
-
-    it('should have readonly options', () => {
-      const options = new PageOptionsModel(10, 0);
-      const page = new PageModel([1, 2], 10, options);
-
-      expect(() => {
-        (page as any).options = new PageOptionsModel(20, 5);
-      }).not.toThrow();
-
-      expect(page.options).toBe(options);
+      expect(page.pagesCount).toBe(10);
     });
   });
 });

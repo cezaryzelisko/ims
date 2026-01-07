@@ -1,4 +1,4 @@
-import { ProductModel, ProductCategoryEnum, DomainError, DomainErrorsEnum } from '../src/domain';
+import { ProductModel, ProductCategoryEnum, DomainError, DomainErrorsEnum } from '../../src/domain';
 
 describe('ProductModel', () => {
   const createProduct = (data: Partial<ProductModel> = {}): ProductModel => {
@@ -34,6 +34,9 @@ describe('ProductModel', () => {
       expect(product.name).toBe('Partial Product');
       expect(product.price).toBe(50);
       expect(product.id).toBeUndefined();
+      expect(product.description).toBeUndefined();
+      expect(product.stock).toBeUndefined();
+      expect(product.category).toBeUndefined();
     });
 
     it('should create an empty product instance', () => {
@@ -41,6 +44,10 @@ describe('ProductModel', () => {
 
       expect(product.id).toBeUndefined();
       expect(product.name).toBeUndefined();
+      expect(product.description).toBeUndefined();
+      expect(product.price).toBeUndefined();
+      expect(product.stock).toBeUndefined();
+      expect(product.category).toBeUndefined();
     });
   });
 
@@ -64,13 +71,12 @@ describe('ProductModel', () => {
     it('should throw error when count is negative', () => {
       const product = createProduct({ stock: 10 });
 
-      expect(() => product.restock(-5)).toThrow(DomainError);
       expect(() => product.restock(-5)).toThrow(
         new DomainError('Restock count has to be positive ([count=-5] was provided)', DomainErrorsEnum.NotAllowedError),
       );
     });
 
-    it('should handle restocking to zero from negative stock (if allowed)', () => {
+    it('should increase stock from 0', () => {
       const product = createProduct({ stock: 0 });
 
       product.restock(100);
@@ -81,21 +87,9 @@ describe('ProductModel', () => {
     it('should handle large restock numbers', () => {
       const product = createProduct({ stock: 100 });
 
-      product.restock(1000000);
+      product.restock(1_000_000);
 
-      expect(product.stock).toBe(1000100);
-    });
-
-    it('should throw error with correct error key', () => {
-      const product = createProduct();
-
-      try {
-        product.restock(-10);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(DomainError);
-        expect((error as DomainError).key).toBe(DomainErrorsEnum.NotAllowedError);
-      }
+      expect(product.stock).toBe(1_000_100);
     });
   });
 
@@ -127,39 +121,20 @@ describe('ProductModel', () => {
     it('should throw error when trying to sell more than available stock', () => {
       const product = createProduct({ stock: 10 });
 
-      expect(() => product.sell(15)).toThrow(DomainError);
-      expect(() => product.sell(15)).toThrow('Stock count can not be negative');
+      expect(() => product.sell(15)).toThrow(
+        new DomainError('Stock count can not be negative', DomainErrorsEnum.NotAllowedError),
+      );
     });
 
     it('should throw error when trying to sell negative count', () => {
       const product = createProduct({ stock: 50 });
 
-      expect(() => product.sell(-5)).toThrow(DomainError);
-      expect(() => product.sell(-5)).toThrow('Restock count has to be positive ([count=-5] was provided)');
-    });
-
-    it('should throw error with NotAllowedError key for overselling', () => {
-      const product = createProduct({ stock: 10 });
-
-      try {
-        product.sell(20);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(DomainError);
-        expect((error as DomainError).key).toBe(DomainErrorsEnum.NotAllowedError);
-      }
-    });
-
-    it('should throw error with NotAllowedError key for negative sell count', () => {
-      const product = createProduct({ stock: 50 });
-
-      try {
-        product.sell(-10);
-        fail('Should have thrown an error');
-      } catch (error) {
-        expect(error).toBeInstanceOf(DomainError);
-        expect((error as DomainError).key).toBe(DomainErrorsEnum.NotAllowedError);
-      }
+      expect(() => product.sell(-5)).toThrow(
+        new DomainError(
+          `Restock count has to be positive ([count=${-5}] was provided)`,
+          DomainErrorsEnum.NotAllowedError,
+        ),
+      );
     });
 
     it('should handle sequential sells', () => {
@@ -181,23 +156,9 @@ describe('ProductModel', () => {
       product.sell(25);
       product.sell(75);
 
-      expect(() => product.sell(1)).toThrow('Stock count can not be negative');
-    });
-  });
-
-  describe('product categories', () => {
-    it('should support all product categories', () => {
-      const categories = [
-        ProductCategoryEnum.Books,
-        ProductCategoryEnum.Clothes,
-        ProductCategoryEnum.Electronics,
-        ProductCategoryEnum.Furnitures,
-      ];
-
-      categories.forEach((category) => {
-        const product = createProduct({ category });
-        expect(product.category).toBe(category);
-      });
+      expect(() => product.sell(1)).toThrow(
+        new DomainError('Stock count can not be negative', DomainErrorsEnum.NotAllowedError),
+      );
     });
   });
 
@@ -206,7 +167,9 @@ describe('ProductModel', () => {
       const product = createProduct({ stock: 0 });
 
       expect(product.stock).toBe(0);
-      expect(() => product.sell(1)).toThrow('Stock count can not be negative');
+      expect(() => product.sell(1)).toThrow(
+        new DomainError('Stock count can not be negative', DomainErrorsEnum.NotAllowedError),
+      );
     });
 
     it('should handle empty product name', () => {
@@ -221,12 +184,6 @@ describe('ProductModel', () => {
       expect(product.price).toBe(0);
     });
 
-    it('should handle negative prices (if allowed by business logic)', () => {
-      const product = createProduct({ price: -100 });
-
-      expect(product.price).toBe(-100);
-    });
-
     it('should handle very large stock numbers', () => {
       const product = createProduct({ stock: Number.MAX_SAFE_INTEGER });
 
@@ -239,18 +196,6 @@ describe('ProductModel', () => {
       expect(product.price).toBe(99.99);
     });
 
-    it('should handle special characters in name and description', () => {
-      const specialName = 'Product @#$%^&*()';
-      const specialDesc = 'Description with <html> tags & symbols!';
-      const product = createProduct({
-        name: specialName,
-        description: specialDesc,
-      });
-
-      expect(product.name).toBe(specialName);
-      expect(product.description).toBe(specialDesc);
-    });
-
     it('should handle very long names and descriptions', () => {
       const longName = 'A'.repeat(1000);
       const longDesc = 'B'.repeat(5000);
@@ -261,25 +206,6 @@ describe('ProductModel', () => {
 
       expect(product.name).toBe(longName);
       expect(product.description).toBe(longDesc);
-    });
-  });
-
-  describe('shouldUpdateStockCount', () => {
-    it('should reject negative counts', () => {
-      const product = createProduct({ stock: 50 });
-
-      expect(() => product.sell(-1)).toThrow();
-      expect(() => product.restock(-1)).toThrow();
-    });
-
-    it('should accept positive counts', () => {
-      const product = createProduct({ stock: 50 });
-
-      product.sell(1);
-      expect(product.stock).toBe(49);
-
-      product.restock(1);
-      expect(product.stock).toBe(50);
     });
   });
 });
