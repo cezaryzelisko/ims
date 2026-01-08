@@ -2,13 +2,14 @@ import { Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColum
 import { ProductEntity } from './product.entity';
 import { CustomerEntity } from './customer.entity';
 import { OrderModel } from '../../../../domain';
+import { numericColumnTransformer } from '../utils';
 
 @Entity('order')
 export class OrderEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'numeric', transformer: numericColumnTransformer })
   price!: number;
 
   @ManyToOne(() => CustomerEntity, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
@@ -24,7 +25,8 @@ export class OrderEntity {
   static fromDomain(model: OrderModel): OrderEntity {
     const entity = new OrderEntity();
     entity.price = model.price!;
-    entity.customerId = model.customerId;
+    entity.customer = new CustomerEntity();
+    entity.customer.id = model.customerId;
     entity.products = model.productIds.map((productId) => {
       const productEntity = new ProductEntity();
       productEntity.id = productId;

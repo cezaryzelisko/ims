@@ -31,6 +31,7 @@ productsRouter.post('/', async (req, res) => {
     description: req.body.description,
     price: req.body.price,
     stock: req.body.stock,
+    category: req.body.category,
   });
   product = await commandBus.execute<CreateProductCommand, ProductModel>(
     new CreateProductCommand(req.id.toString(), product),

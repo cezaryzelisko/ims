@@ -1,5 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 import { ProductCategoryEnum, ProductModel } from '../../../../domain';
+import { numericColumnTransformer } from '../utils';
 
 @Entity('product')
 export class ProductEntity {
@@ -12,7 +13,7 @@ export class ProductEntity {
   @Column({ length: 50 })
   description!: string;
 
-  @Column({ type: 'numeric' })
+  @Column({ type: 'numeric', transformer: numericColumnTransformer })
   price!: number;
 
   @Column({ type: 'int' })

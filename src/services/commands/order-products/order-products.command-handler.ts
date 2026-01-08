@@ -75,7 +75,7 @@ export class OrderProductsCommandHandler implements IOperationHandler<OrderProdu
         const productRepository = getRepoFn(RepositoryEnum.Product) as IProductRepository;
 
         order = await orderRepository.orderProducts(order);
-        await this.updateProductsStockLevels(productRepository, products);
+        await Promise.all(products.map((product) => productRepository.persist(product)));
 
         return order;
       },
@@ -86,17 +86,5 @@ export class OrderProductsCommandHandler implements IOperationHandler<OrderProdu
     }
 
     return transaction.result!;
-  }
-
-  private async updateProductsStockLevels(
-    productRepository: IProductRepository,
-    products: ProductModel[],
-  ): Promise<void> {
-    await Promise.all(
-      products.map(async (product) => {
-        product.sell(1);
-        await productRepository.persist(product);
-      }),
-    );
   }
 }
