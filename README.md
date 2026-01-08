@@ -92,6 +92,8 @@ $> npm run typeorm:revert
 
 The above command reverts only the last migration. However, it can be run many times.
 
+**Please note that all missing migrations will be applied automatically during the application startup if `DB_RUN_MIGRATIONS` environment variable is set to true**.
+
 ## Notes
 
 For further details please navigate to [Notes](NOTES.md) file.
@@ -118,3 +120,7 @@ I chose it as quite straightforward and simple to implement. I also decided to d
 ---
 
 Provided RESTful API implements only endpoints which were specified in the requirements. In the production ready application, it'd be necessary to create additional endpoints eg. for deleting a product, getting a product by ID or listing all orders made by a customer.
+
+---
+
+All calulations during eg. determing total order value are done using simple JavaScript operations. The downside of this is that it might result in lost decimal precision. In production system it'd be necessary to use some package that supports financial calculations, eg. [Dinero.js](https://www.npmjs.com/package/dinero.js).
