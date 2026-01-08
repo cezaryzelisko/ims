@@ -60,6 +60,10 @@ $> npm run build
 $> npm run start:prod
 ```
 
+By default the application will be available on the localhost on port 3000 (http://localhost:3000).
+
+In this repository there is also a [postman collection](./postman-collection.json) with all endpoints.
+
 ## Migrations
 
 This application uses TypeORM as an ORM library. Here is a list of commands that help in migrations management:
