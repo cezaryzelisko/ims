@@ -17,7 +17,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint 'src/**/*.ts'",
-    "start:prod": "node dist/index.js",
+    "start:prod": "node dist/src/index.js",
     "start:local": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
     "test": "jest",
     "typeorm": "npx typeorm-ts-node-commonjs",

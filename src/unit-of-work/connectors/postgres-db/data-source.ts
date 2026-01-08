@@ -9,8 +9,8 @@ export default new DataSource({
   username: config.db.username,
   password: config.db.password,
   migrationsRun: config.db.runMigrations,
-  migrations: ['src/unit-of-work/connectors/postgres-db/migrations/**/*{.js,.ts}'],
+  migrations: [`${__dirname}/migrations/**/*{.js,.ts}`],
   synchronize: false,
   logging: false,
-  entities: ['src/unit-of-work/connectors/postgres-db/entities/**/*{.js,.ts}'],
+  entities: [`${__dirname}/entities/**/*{.js,.ts}`],
 });
