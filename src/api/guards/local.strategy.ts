@@ -1,0 +1,20 @@
+import { Strategy } from 'passport-local';
+import { container } from 'tsyringe';
+import { GenericBus, InjectionTokens } from '../../services';
+import { LoginCustomerCommand } from '../../services/commands/login-customer/login-customer.command';
+import { CustomerModel } from '../../domain';
+
+export function prepareUsernameAndPasswordGuard(): Strategy {
+  return new Strategy({ passReqToCallback: true, session: false }, async (req, username, password, done) => {
+    const commandBus = container.resolve<GenericBus>(InjectionTokens.CommandBus);
+    const customer = await commandBus.execute<LoginCustomerCommand, CustomerModel | null>(
+      new LoginCustomerCommand(req.id.toString(), username, password),
+    );
+
+    if (!customer) {
+      return done(null, false, { message: 'Invalid username or password' });
+    }
+
+    return done(null, customer.toContextModel());
+  });
+}
