@@ -1,0 +1,401 @@
+{
+	"info": {
+		"_postman_id": "203bf721-805d-4dc6-8c3d-a6093776bcf1",
+		"name": "ims",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "13580531"
+	},
+	"item": [
+		{
+			"name": "/products",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{api_url}}/{{api_version}}/{{products_path}}?limit=15&page=1",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"{{api_version}}",
+								"{{products_path}}"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "15"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"PlayStation 1\",\n    \"description\": \"description\",\n    \"price\": 84.99,\n    \"stock\": 9,\n    \"category\": \"Electronics\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/{{api_version}}/{{products_path}}",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"{{api_version}}",
+								"{{products_path}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id/restock",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"count\": 11\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/{{api_version}}/{{products_path}}/:id/restock",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"{{api_version}}",
+								"{{products_path}}",
+								":id",
+								"restock"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "e2a03fee-276c-41ca-afbe-c2dcbe161109"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/:id/sell",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"count\": 6\n}"
+						},
+						"url": {
+							"raw": "{{api_url}}/{{api_version}}/{{products_path}}/:id/sell",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"{{api_version}}",
+								"{{products_path}}",
+								":id",
+								"sell"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "9e08383b-5164-4a4c-9491-26a4cad501aa"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "/customers",
+			"item": [
+				{
+					"name": "/registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\",\n    \"region\": \"US\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/{{api_version}}/{{customers_path}}/registration",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"{{api_version}}",
+								"{{customers_path}}",
+								"registration"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "/login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const token = pm.response.json().token;",
+									"pm.collectionVariables.set(\"token\", token);",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{username}}\",\n    \"password\": \"{{password}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/{{api_version}}/{{customers_path}}/login",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"{{api_version}}",
+								"{{customers_path}}",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "/orders",
+			"item": [
+				{
+					"name": "/",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productIds\": [\n        \"411e717e-d969-4534-9449-e6874a514358\",\n        \"a1b2d996-7993-412c-acd7-319d6fa2c954\",\n        \"0b97c974-706a-4603-8e3d-89889d67d819\",\n        \"9e08383b-5164-4a4c-9491-26a4cad501aa\",\n        \"982c343b-c654-4458-8616-d5dc26a8c49e\"\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{api_url}}/{{api_version}}/{{orders_path}}/",
+							"host": [
+								"{{api_url}}"
+							],
+							"path": [
+								"{{api_version}}",
+								"{{orders_path}}",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"requests": {},
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "api_url",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "api_version",
+			"value": "v1"
+		},
+		{
+			"key": "products_path",
+			"value": "products"
+		},
+		{
+			"key": "orders_path",
+			"value": "orders"
+		},
+		{
+			"key": "customers_path",
+			"value": "customers"
+		},
+		{
+			"key": "username",
+			"value": "user"
+		},
+		{
+			"key": "password",
+			"value": "pass123"
+		},
+		{
+			"key": "token",
+			"value": ""
+		}
+	]
+}
